@@ -154,7 +154,12 @@ Then, run the clash-of-particles executable, choosing the data file:
 
 *Note: The `data/random-50.txt` or `data/random-100.txt` files are the most interesting.*     
 
-
+**Optional**: edit documentation.   
+It is possible to produce the documentation via doxygen:
+   ```bash
+   make doc
+   ```
+Then, a `doc/` folder will appear in tree structure!
 <br>
 
 ## 🧪 **Running tests**
