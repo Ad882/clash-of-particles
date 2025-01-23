@@ -117,28 +117,22 @@ double expected_time_collision_between_particles(particle p_1, particle p_2){
     delta_v.vy = (p_2.vy) - (p_1.vy);
 
     /* calcul de produits scalaires intermédiaires */
-    double delta_p_delta_p =  pow((delta_p.x), 2) + pow((delta_p.y), 2); 
-    double delta_p_delta_v = (delta_p.x)*(delta_v.vx) + (delta_p.y)*(delta_v.vy);
-    double delta_v_delta_v = pow((delta_v.vx), 2) + pow((delta_v.vy), 2);
+    double delta_p_delta_p = pow(delta_p.x, 2) + pow(delta_p.y, 2);
+    double delta_p_delta_v = delta_p.x * delta_v.vx + delta_p.y * delta_v.vy;
+    double delta_v_delta_v = pow(delta_v.vx, 2) + pow(delta_v.vy, 2);
 
     double r1 = p_1.radius;
     double r2 = p_2.radius;
 
     /* calcul du discriminant */
-    double discriminant = 4*pow(delta_p_delta_v, 2) - 4*delta_v_delta_v * (delta_p_delta_p - pow(r1 + r2, 2));
+    double discriminant = 4 * pow(delta_p_delta_v, 2) - 4 * delta_v_delta_v * (delta_p_delta_p - pow(r1 + r2, 2));
+    time = - (2 * delta_p_delta_v + sqrt(discriminant)) / (2 * delta_v_delta_v);
 
-    if (discriminant < epsilon ){ /* Si le discriminant est nul, on renvoit INFINITY */
+    if (discriminant < epsilon){ /* Si le discriminant est nul, on renvoit INFINITY */
         return INFINITY; 
     } else {
-        time = - (2*delta_p_delta_v + sqrt(discriminant))/(2*delta_v_delta_v);
+        return fabs(time); /* dans le cas contraire on retourne le temps calculé */
 
-        /* Si le temps est nul ou négatif les particules ne se touchent pas,
-        on renvoit INFINITY*/
-        if ( time < epsilon ){
-            return INFINITY; 
-        } else { 
-            return time; /* dans le cas contraire on retourne le temps calculé */
-        }
     }    
 
 }
@@ -173,46 +167,44 @@ void velocity_collision_between_particles(particle *p_1, particle *p_2){
         old_velocity_vector_2.vy);  , ligne utilisée lors du test-particle  */
     } else {
 
+        /* Sinon on détermine alors les nouvelles positions */
+        position_particle new_position_vector_1;
+        new_position_vector_1.x = p_1 -> x + p_1 -> vx * time;
+        new_position_vector_1.y = p_1 -> y + p_1 -> vy * time;
+        position_particle new_position_vector_2;
+        new_position_vector_2.x = p_2 -> x + p_2 -> vx * time;
+        new_position_vector_2.y = p_2 -> y + p_2 -> vy * time;
+
+        /* on calcule le delta_p */
+        position_particle new_delta_p;
+        new_delta_p.x = (new_position_vector_2.x) - (new_position_vector_1.x);
+        new_delta_p.y = (new_position_vector_2.y) - (new_position_vector_1.y);
+
+        /* on calcule des produits scalaires intermédiaires */
+        double new_delta_p_delta_p =  pow((new_delta_p.x), 2) + pow((new_delta_p.y), 2);
+        double new_delta_p_delta_v = ((new_delta_p.x)*(delta_v.vx) + (new_delta_p.y)*(delta_v.vy));
+
+        /*on utilise les formules pour calculer les nouvelles vitesses */ 
+        velocity_particle new_velocity_vector_1;
+        new_velocity_vector_1.vx = old_velocity_vector_1.vx + ( (2 * m2 * new_delta_p_delta_v) / ((m1 + m2) * new_delta_p_delta_p )*new_delta_p.x) ;
+        new_velocity_vector_1.vy = old_velocity_vector_1.vy + ( (2 * m2 * new_delta_p_delta_v) / ((m1 + m2) * new_delta_p_delta_p )*new_delta_p.y) ;
+
+        velocity_particle new_velocity_vector_2; 
+        new_velocity_vector_2.vx = old_velocity_vector_2.vx - ( (2 * m1 * new_delta_p_delta_v) / ((m1 + m2) * new_delta_p_delta_p )*new_delta_p.x) ;
+        new_velocity_vector_2.vy = old_velocity_vector_2.vy - ( (2 * m1 * new_delta_p_delta_v) / ((m1 + m2) * new_delta_p_delta_p )*new_delta_p.y) ;
 
 
-    /* Sinon on détermine alors les nouvelles positions */
-    position_particle new_position_vector_1;
-    new_position_vector_1.x = p_1 -> x + p_1 -> vx * time;
-    new_position_vector_1.y = p_1 -> y + p_1 -> vy * time;
-    position_particle new_position_vector_2;
-    new_position_vector_2.x = p_2 -> x + p_2 -> vx * time;
-    new_position_vector_2.y = p_2 -> y + p_2 -> vy * time;
+        /* on stocke les nouvelles vitesses dans les particules associées */
+        p_1 -> vx = new_velocity_vector_1.vx;
+        p_1 -> vy = new_velocity_vector_1.vy;
 
-    /* on calcule le delta_p */
-    position_particle new_delta_p;
-    new_delta_p.x = (new_position_vector_2.x) - (new_position_vector_1.x);
-    new_delta_p.y = (new_position_vector_2.y) - (new_position_vector_1.y);
-
-    /* on calcule des produits scalaires intermédiaires */
-    double new_delta_p_delta_p =  pow((new_delta_p.x), 2) + pow((new_delta_p.y), 2);
-    double new_delta_p_delta_v = ((new_delta_p.x)*(delta_v.vx) + (new_delta_p.y)*(delta_v.vy));
-
-    /*on utilise les formules pour calculer les nouvelles vitesses */ 
-    velocity_particle new_velocity_vector_1;
-    new_velocity_vector_1.vx = old_velocity_vector_1.vx + ( (2 * m2 * new_delta_p_delta_v) / ((m1 + m2) * new_delta_p_delta_p )*new_delta_p.x) ;
-    new_velocity_vector_1.vy = old_velocity_vector_1.vy + ( (2 * m2 * new_delta_p_delta_v) / ((m1 + m2) * new_delta_p_delta_p )*new_delta_p.y) ;
-
-    velocity_particle new_velocity_vector_2; 
-    new_velocity_vector_2.vx = old_velocity_vector_2.vx - ( (2 * m1 * new_delta_p_delta_v) / ((m1 + m2) * new_delta_p_delta_p )*new_delta_p.x) ;
-    new_velocity_vector_2.vy = old_velocity_vector_2.vy - ( (2 * m1 * new_delta_p_delta_v) / ((m1 + m2) * new_delta_p_delta_p )*new_delta_p.y) ;
+        p_2 -> vx = new_velocity_vector_2.vx;
+        p_2 -> vy = new_velocity_vector_2.vy;   
 
 
-    /* on stocke les nouvelles vitesses dans les particules associées */
-    p_1 -> vx = new_velocity_vector_1.vx;
-    p_1 -> vy = new_velocity_vector_1.vy;
-
-    p_2 -> vx = new_velocity_vector_2.vx;
-    p_2 -> vy = new_velocity_vector_2.vy;   
-
-
-    /* printf("vitesses de la particule 1: %f%f\n vitesses de la particule 2: %f%f\n ", 
-    new_velocity_vector_1.vx, new_velocity_vector_1.vy, new_velocity_vector_2.vx, 
-    new_velocity_vector_2.vy);    , ligne utilisée lors du test-particle  */
+        /* printf("vitesses de la particule 1: %f%f\n vitesses de la particule 2: %f%f\n ", 
+        new_velocity_vector_1.vx, new_velocity_vector_1.vy, new_velocity_vector_2.vx, 
+        new_velocity_vector_2.vy);    , ligne utilisée lors du test-particle  */
     
     }
 }
@@ -223,7 +215,7 @@ void velocity_collision_between_particles(particle *p_1, particle *p_2){
 void print_particle(particle *p, int size){
 
     for (int i = 0; i < size; i++){
-        printf("%f %f %f %f %f %f %d\n", p -> x, p -> y, p -> vx, p -> vy, p -> mass, p -> radius, p -> color);
+        printf("Particule %d: %f %f %f %f %f %f %d\n", i, p[i].x, p[i].y, p[i].vx, p[i].vy, p[i].mass, p[i].radius, p[i].color);
     }
 }
 

@@ -50,14 +50,13 @@ double min(double a, double b){
     /* Première boucle: le programme s'execute jusqu'à une certaine limite temporelle */
     while(time < time_limit){
 
-            draw_particles(nb_particles, list_particles); /* A chaque actualisation 
-                                                            (événement), on dessine la liste 
-                                                            des nouvelles particles */
+        draw_particles(nb_particles, list_particles); /* A chaque actualisation 
+                                                        (événement), on dessine la liste 
+                                                        des nouvelles particles */
         
         /* Deuxième boucle: on détermine "l'événement limintant", i.e l'événement qui va arriver
         en premier et qu'il faudra traiter en premier */
         while (time < time_next_draw){
-  
             /* initialisation de "l'événement limitant" */
             next_event.p_particle_a = NULL;
             next_event.p_particle_b = NULL;
@@ -102,14 +101,15 @@ double min(double a, double b){
                 avant tout autre événement */
                 for (int j = i + 1; j < nb_particles; j++){
                      
-                        /* Si le temps de collision entre deux particules est plus petit que le temps
-                        d'arrivée du prochain événement, alors on actualise le prochain événement, qui
-                        devient alors une collision entre deux particules */
-                            if (expected_time_collision_between_particles(list_particles[i], list_particles[j]) < next_event.time){
-                                next_event.time = expected_time_collision_between_particles(list_particles[i], list_particles[j]);
-                                next_event.p_particle_a = &list_particles[i];
-                                next_event.p_particle_b = &list_particles[j];
-                            }    
+                    /* Si le temps de collision entre deux particules est plus petit que le temps
+                    d'arrivée du prochain événement, alors on actualise le prochain événement, qui
+                    devient alors une collision entre deux particules */
+                    double time_particles = expected_time_collision_between_particles(list_particles[i], list_particles[j]);
+                    if (time_particles < next_event.time){
+                        next_event.time = time_particles;
+                        next_event.p_particle_a = &list_particles[i];
+                        next_event.p_particle_b = &list_particles[j];
+                    }    
                 }
             }
 
@@ -137,7 +137,7 @@ double min(double a, double b){
             }
 
             /* On actualise le temps qui s'est écoulé */
-            time = time + next_event.time;            
+            time = time + next_event.time;
         }
 
         /* On actualise le temps du prochain refresh s'il n'y a pas d'événement */
