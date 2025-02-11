@@ -10,7 +10,7 @@ A school project designed to modelize gas particules colliding.
 Here's the current structure of the project:
 
 ```
-phishing-simulator/
+clash-of-particles/
 ├── conf/                           # Configuration folder
 │   └── doxygen.conf                # Doxygen configuration file
 │
